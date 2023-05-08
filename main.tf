@@ -27,25 +27,25 @@ resource "azurerm_resource_group" "azure-lz-sub1rg"{
 ####### Route Table ########
 ############################
 
-resource "azurerm_route_table" "azure-lz-routeTable"{
-   count = var.Route_Table_name != null ? [1] : 0
-   name =  var.Route_Table_name
-   location  =  azurerm_resource_group.azure-lz-sub1rg.location
-   resource_group_name = azurerm_resource_group.azure-lz-sub1rg.name
-   disable_bgp_route_propagation = var.disable_bgp_route_propagation
-   tags = merge({"ResourceName" = var.Route_Table_name}, var.route_tags)
+# resource "azurerm_route_table" "azure-lz-routeTable"{
+#    count = var.Route_Table_name != null ? [1] : 0
+#    name =  var.Route_Table_name
+#    location  =  azurerm_resource_group.azure-lz-sub1rg.location
+#    resource_group_name = azurerm_resource_group.azure-lz-sub1rg.name
+#    disable_bgp_route_propagation = var.disable_bgp_route_propagation
+#    tags = merge({"ResourceName" = var.Route_Table_name}, var.route_tags)
 
 
-    dynamic "route" {
-    for_each = var.route_rule
-    content {
-    name           = route.value["routename"]
-    address_prefix = route.value["address_prefix"]
-    next_hop_type  = route.value["next_hop_type"]
-    next_hop_in_ip_address = route.value["next_hop_type"] != "VirtualAppliance" ?  null : route.value["next_hop_in_ip_address"]
-  }
-    }
-  }
+#     dynamic "route" {
+#     for_each = var.route_rule
+#     content {
+#     name           = route.value["routename"]
+#     address_prefix = route.value["address_prefix"]
+#     next_hop_type  = route.value["next_hop_type"]
+#     next_hop_in_ip_address = route.value["next_hop_type"] != "VirtualAppliance" ?  null : route.value["next_hop_in_ip_address"]
+#   }
+#     }
+#   }
 
 
 ############################
@@ -113,68 +113,68 @@ resource "azurerm_subnet_route_table_association" "azure-lz-vnet" {
   subnet_id      = local.azurerm_subnets[each.key] 
 }
 
-###########################
-###### VNET Peering #######
-###########################
+# ###########################
+# ###### VNET Peering #######
+# ###########################
 
-data "azurerm_subscription" "current" {}
+# data "azurerm_subscription" "current" {}
 
-locals {
-  subscription_id_1 = var.subscription_ids[0]
-  #subscription_id_2 = var.subscription_ids[1]
-}
+# locals {
+#   subscription_id_1 = var.subscription_ids[0]
+#   #subscription_id_2 = var.subscription_ids[1]
+# }
 
-provider "azurerm" {
-  features {
+# provider "azurerm" {
+#   features {
     
-  }
-  alias           = "sub1"
-  subscription_id = "${local.subscription_id_1}"
-}
+#   }
+#   alias           = "sub1"
+#   subscription_id = "${local.subscription_id_1}"
+# }
 
-provider "azurerm" {
-  features {
+# provider "azurerm" {
+#   features {
     
-  }
-  alias           = "sub2"
-  subscription_id = "${local.subscription_id_1}"
-}
+#   }
+#   alias           = "sub2"
+#   subscription_id = "${local.subscription_id_1}"
+# }
 
-data "azurerm_resource_group" "rg1" {
-  provider = azurerm.sub1
-  name     = "${var.resource_group_names[0]}"
-}
+# data "azurerm_resource_group" "rg1" {
+#   provider = azurerm.sub1
+#   name     = "${var.resource_group_names[0]}"
+# }
 
-data "azurerm_virtual_network" "vnet1" {
-  provider            = azurerm.sub1
-  name                = "${var.vnet_names[0]}"
-  resource_group_name = "${data.azurerm_resource_group.rg1.name}"
-}
+# data "azurerm_virtual_network" "vnet1" {
+#   provider            = azurerm.sub1
+#   name                = "${var.vnet_names[0]}"
+#   resource_group_name = "${data.azurerm_resource_group.rg1.name}"
+# }
 
-resource "azurerm_virtual_network_peering" "vnet_peer_1" {
-  provider            = azurerm.sub1
-  name                         = "${var.vnet_peering_names[0]}"
-  resource_group_name          = "${data.azurerm_resource_group.rg1.name}"
-  virtual_network_name         = "${data.azurerm_virtual_network.vnet1.name}"
-  remote_virtual_network_id    = "${azurerm_virtual_network.azure-lz-vnet.id}"
- # remote_virtual_network_id = var.vnet_id_2
-  allow_virtual_network_access = "${var.allow_virtual_network_access}"
-  allow_forwarded_traffic      = "${var.allow_forwarded_traffic}"
-  use_remote_gateways          = "${var.use_remote_gateways1}"
-  allow_gateway_transit        = "${var.allow_gateway_transit}"
-}
+# resource "azurerm_virtual_network_peering" "vnet_peer_1" {
+#   provider            = azurerm.sub1
+#   name                         = "${var.vnet_peering_names[0]}"
+#   resource_group_name          = "${data.azurerm_resource_group.rg1.name}"
+#   virtual_network_name         = "${data.azurerm_virtual_network.vnet1.name}"
+#   remote_virtual_network_id    = "${azurerm_virtual_network.azure-lz-vnet.id}"
+#  # remote_virtual_network_id = var.vnet_id_2
+#   allow_virtual_network_access = "${var.allow_virtual_network_access}"
+#   allow_forwarded_traffic      = "${var.allow_forwarded_traffic}"
+#   use_remote_gateways          = "${var.use_remote_gateways1}"
+#   allow_gateway_transit        = "${var.allow_gateway_transit}"
+# }
 
-resource "azurerm_virtual_network_peering" "vnet_peer_2" {
-  provider            = azurerm.sub2
-  name                         = "${var.vnet_peering_names[1]}"
-  #resource_group_name          = "${data.azurerm_resource_group.rg2.name}"
-  resource_group_name          = azurerm_resource_group.azure-lz-sub1rg.name
-  virtual_network_name         = "${var.vnet_names[1]}"
-  remote_virtual_network_id    = "${data.azurerm_virtual_network.vnet1.id}"
-  allow_virtual_network_access = "${var.allow_virtual_network_access}"
-  allow_forwarded_traffic      = "${var.allow_forwarded_traffic}"
-  use_remote_gateways          = "${var.use_remote_gateways2}"
-}
+# resource "azurerm_virtual_network_peering" "vnet_peer_2" {
+#   provider            = azurerm.sub2
+#   name                         = "${var.vnet_peering_names[1]}"
+#   #resource_group_name          = "${data.azurerm_resource_group.rg2.name}"
+#   resource_group_name          = azurerm_resource_group.azure-lz-sub1rg.name
+#   virtual_network_name         = "${var.vnet_names[1]}"
+#   remote_virtual_network_id    = "${data.azurerm_virtual_network.vnet1.id}"
+#   allow_virtual_network_access = "${var.allow_virtual_network_access}"
+#   allow_forwarded_traffic      = "${var.allow_forwarded_traffic}"
+#   use_remote_gateways          = "${var.use_remote_gateways2}"
+# }
 
 
 
