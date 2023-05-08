@@ -107,11 +107,11 @@ resource "azurerm_subnet_network_security_group_association" "azure-lz-vnet" {
   network_security_group_id = each.value
 }
 
-resource "azurerm_subnet_route_table_association" "azure-lz-vnet" {
-  for_each       = var.route_tables_ids
-  route_table_id = each.value == "" ? azurerm_route_table.azure-lz-routeTable.id : each.value
-  subnet_id      = local.azurerm_subnets[each.key] 
-}
+# resource "azurerm_subnet_route_table_association" "azure-lz-vnet" {
+#   for_each       = var.route_tables_ids
+#   route_table_id = each.value == "" ? azurerm_route_table.azure-lz-routeTable.id : each.value
+#   subnet_id      = local.azurerm_subnets[each.key] 
+# }
 
 # ###########################
 # ###### VNET Peering #######

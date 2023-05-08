@@ -135,11 +135,11 @@ variable "nsg_ids" {
   }
 }
 
-variable "route_tables_ids" {
-  description = "A map of subnet name to Route table ids"
-  type        = map(string)
-  default     = {}
-}
+# variable "route_tables_ids" {
+#   description = "A map of subnet name to Route table ids"
+#   type        = map(string)
+#   default     = {}
+# }
 
 variable "vnet_tags" {
   description = "The tags to associate with your network and subnets."
