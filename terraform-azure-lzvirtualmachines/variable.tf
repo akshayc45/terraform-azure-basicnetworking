@@ -74,6 +74,11 @@ variable "dedicated_host_id" {
   default     = null
   description = "(Optional) The ID of a Dedicated Host where this machine should be run on. Conflicts with `dedicated_host_group_id`."
 }
+variable "disable_password_authentication" {
+  type = bool
+  default = false
+  nullable = false
+}
 variable "edge_zone" {
   type        = string
   default     = null
