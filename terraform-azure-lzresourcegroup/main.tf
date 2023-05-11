@@ -23,6 +23,6 @@ resource "azurerm_resource_group" "azure-lz-sub1rg"{
    location  =  each.value.rglocation
    tags =  merge({"ResourceName" = "${each.value.rgname}"},each.value.tags)
 }
-output "name" {
-  value = local.time
-}
+# output "name" {
+#   value = local.time
+# }
