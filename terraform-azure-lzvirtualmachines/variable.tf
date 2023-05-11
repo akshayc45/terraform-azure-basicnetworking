@@ -3,6 +3,10 @@ variable "os_type" {
   nullable = false
   description = "Type of os vm need to deplo, Possible valuse are linux or windows."
 }
+variable "linux_vm" {
+  type = any
+  default = {}
+}
 variable "admin_username" {
   type        = string
   default     = "azureuser"
