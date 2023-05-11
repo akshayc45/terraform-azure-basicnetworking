@@ -6,8 +6,8 @@ resource "tls_private_key" "rsa" {
 
 
 resource "azurerm_linux_virtual_machine" "vm_linux" {
-  #count = ? 1 : 0
-  for_each = lower(var.os_type) == "linux" ? var.linux_vm : {}
+  count = lower(var.os_type) ? 1 : 0
+  #for_each = lower(var.os_type) == "linux" ? var.linux_vm : {}
 
   admin_username                  = var.admin_username
   location                        = var.location
