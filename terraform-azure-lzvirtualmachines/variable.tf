@@ -1,3 +1,8 @@
+variable "os_type" {
+  type = string
+  nullable = false
+  description = "Type of os vm need to deplo, Possible valuse are linux or windows."
+}
 variable "admin_username" {
   type        = string
   default     = "azureuser"
@@ -242,6 +247,26 @@ variable "enable_boot_diagnostics" {
     type = bool
     default = false
 }
+
+variable "gallery_application" {
+  type = list(object({
+    version_id             = string
+    configuration_blob_uri = optional(string)
+    order                  = optional(number, 0)
+    tag                    = optional(string)
+  }))
+  default     = []
+  description = <<-EOT
+  gallery_application = [
+    {
+    version_id             = "(Required) Specifies the Gallery Application Version resource ID."
+    configuration_blob_uri = "(Optional) Specifies the URI to an Azure Blob that will replace the default configuration for the package if provided."
+    order                  = "(Optional) Specifies the order in which the packages have to be installed. Possible values are between `0` and `2,147,483,647`."
+    tag                    = "(Optional) Specifies a passthrough value for more generic context. This field can be any valid `string` value."
+    }
+  ]
+  EOT
+}
 variable "storage_account_name" {
       type = string
     default = null
@@ -285,13 +310,14 @@ variable "secrets" {
   }))
   default     = []
   description = <<-EOT
-  list(object({
+   secrets = [
+    {
     key_vault_id = "(Required) The ID of the Key Vault from which all Secrets should be sourced."
     certificate  = set(object({
       url   = "(Required) The Secret URL of a Key Vault Certificate. This can be sourced from the `secret_id` field within the `azurerm_key_vault_certificate` Resource."
       store = "(Optional) The certificate store on the Virtual Machine where the certificate should be added. Required when use with Windows Virtual Machine."
-    }))
-  }))
+    }
+    ]
   EOT
   nullable    = false
 }
@@ -324,4 +350,10 @@ variable "termination_notification" {
     timeout = optional(string, "PT5M")
   })
   EOT
+}
+
+variable "tags" {
+  type = map
+  description = "key value pair of tags"
+  default = {}
 }

@@ -89,12 +89,15 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
     }
   }
 
-   gallery_application {
+  dynamic "gallery_application" {
+    for_each = toset(var.gallery_application)
+    content {
       version_id             = var.gallery_application.version_id
       configuration_blob_uri = var.gallery_application.configuration_blob_uri
       order                  = var.gallery_application.order
       tag                    = var.gallery_application.tag
     }
+  }
 
   dynamic "identity" {
     for_each = var.identity == null ? [] : ["identity"]
