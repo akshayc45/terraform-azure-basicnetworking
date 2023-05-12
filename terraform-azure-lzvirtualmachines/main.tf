@@ -4,10 +4,13 @@ resource "tls_private_key" "rsa" {
   rsa_bits  = 4096
 }
 
+#############################################
+##############  L I N U X V M  ##############
+#############################################
 
 resource "azurerm_linux_virtual_machine" "vm_linux" {
-  #count = lower(var.os_type) == "linux" ? 1 : 0
-  for_each = lower(var.os_type) == "linux" ? var.linux_vm : {}
+  count = lower(var.os_type) == "linux" ? 1 : 0
+  #for_each = lower(var.os_type) == "linux" ? var.linux_vm : {}
 
   admin_username                  = var.admin_username
   location                        = var.location
@@ -38,11 +41,11 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
   proximity_placement_group_id    = var.proximity_placement_group_id
   secure_boot_enabled             = var.secure_boot_enabled
   source_image_id                 = var.source_image_id
-  user_data                    = var.user_data
-  virtual_machine_scale_set_id = var.virtual_machine_scale_set_id
-  vtpm_enabled                 = var.vtpm_enabled
-  zone                         = var.zone
-  tags = var.tags
+  user_data                       = var.user_data
+  virtual_machine_scale_set_id    = var.virtual_machine_scale_set_id
+  vtpm_enabled                    = var.vtpm_enabled
+  zone                            = var.zone
+  tags                            = var.tags
 
   os_disk {
     caching                          = var.os_disk.caching
@@ -74,13 +77,13 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
       ultra_ssd_enabled = var.vm_additional_capabilities.ultra_ssd_enabled
     }
   }
- dynamic "admin_ssh_key" {
-    for_each= var.disable_password_authentication  ? [1] : []
+  dynamic "admin_ssh_key" {
+    for_each = var.disable_password_authentication ? [1] : []
     content {
-    username   = try(var.admin_username, "azureuser")
-    public_key = var.admin_ssh_key_data == null ? tls_private_key.rsa[0].public_key_openssh : var.admin_ssh_key_data
-      }
+      username   = try(var.admin_username, "azureuser")
+      public_key = var.admin_ssh_key_data == null ? tls_private_key.rsa[0].public_key_openssh : var.admin_ssh_key_data
     }
+  }
 
   dynamic "boot_diagnostics" {
     for_each = var.enable_boot_diagnostics ? [1] : []
@@ -149,20 +152,25 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
   }
 }
 
+
+# #############################################
+# ############  W I N D O W S V M  ############
+# #############################################
+
 # resource "azurerm_windows_virtual_machine" "vm_windows" {
-#   count = local.is_windows ? 1 : 0
+#   count = lower(var.os_type) == "windows" ? 1 : 0
 
 #   admin_password                = var.admin_password
 #   admin_username                = var.admin_username
 #   location                      = var.location
 #   name                          = var.name
-#   network_interface_ids         = local.network_interface_ids
+#   network_interface_ids         = var.network_interface_ids
 #   resource_group_name           = var.resource_group_name
 #   size                          = var.size
 #   allow_extension_operations    = var.allow_extension_operations
 #   availability_set_id           = var.availability_set_id
 #   capacity_reservation_group_id = var.capacity_reservation_group_id
-#   computer_name                 = coalesce(var.computer_name, var.name)
+#   computer_name                 = var.computer_name
 #   custom_data                   = var.custom_data
 #   dedicated_host_group_id       = var.dedicated_host_group_id
 #   dedicated_host_id             = var.dedicated_host_id
@@ -175,21 +183,14 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
 #   license_type                  = var.license_type
 #   max_bid_price                 = var.max_bid_price
 #   patch_assessment_mode         = var.patch_assessment_mode
-#   patch_mode                    = local.patch_mode
+#   patch_mode                    = var.patch_mode
 #   platform_fault_domain         = var.platform_fault_domain
 #   priority                      = var.priority
 #   provision_vm_agent            = var.provision_vm_agent
 #   proximity_placement_group_id  = var.proximity_placement_group_id
 #   secure_boot_enabled           = var.secure_boot_enabled
 #   source_image_id               = var.source_image_id
-#   tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
-#     avm_git_commit           = "3e89abe6574b2b38fe9bbf15949782bf337bdbdb"
-#     avm_git_file             = "main.tf"
-#     avm_git_last_modified_at = "2023-01-06 12:36:49"
-#     avm_git_org              = "Azure"
-#     avm_git_repo             = "terraform-azurerm-virtual-machine"
-#     avm_yor_trace            = "ffaa4381-fb26-4049-aaa4-6b76a34fdf1b"
-#   } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
+#   tags = var.tags
 #   timezone                     = var.timezone
 #   user_data                    = var.user_data
 #   virtual_machine_scale_set_id = var.virtual_machine_scale_set_id
@@ -237,20 +238,18 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
 #     }
 #   }
 #   dynamic "boot_diagnostics" {
-#     for_each = var.boot_diagnostics ? ["boot_diagnostics"] : []
-
+#     for_each = var.enable_boot_diagnostics ? [1] : []
 #     content {
-#       storage_account_uri = try(azurerm_storage_account.boot_diagnostics[0].primary_blob_endpoint, var.boot_diagnostics_storage_account_uri)
+#       storage_account_uri = var.storage_account_name != null ? data.azurerm_storage_account.storeacc.0.primary_blob_endpoint : var.storage_account_uri
 #     }
 #   }
 #   dynamic "gallery_application" {
-#     for_each = { for app in var.gallery_application : jsonencode(app) => app }
-
+#     for_each = toset(var.gallery_application)
 #     content {
-#       version_id             = gallery_application.value.version_id
-#       configuration_blob_uri = gallery_application.value.configuration_blob_uri
-#       order                  = gallery_application.value.order
-#       tag                    = gallery_application.value.tag
+#       version_id             = var.gallery_application.version_id
+#       configuration_blob_uri = var.gallery_application.configuration_blob_uri
+#       order                  = var.gallery_application.order
+#       tag                    = var.gallery_application.tag
 #     }
 #   }
 #   dynamic "identity" {
@@ -260,7 +259,7 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
 #       type         = var.identity.type
 #       identity_ids = var.identity.identity_ids
 #     }
-#   }
+  
 #   dynamic "plan" {
 #     for_each = var.plan == null ? [] : ["plan"]
 
@@ -295,83 +294,20 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
 #     }
 #   }
 #   dynamic "termination_notification" {
-#     for_each = var.termination_notification == null ? [] : [
-#       "termination_notification"
-#     ]
-
+#     for_each = var.termination_notification == null ? [] : [ "termination_notification" ]
 #     content {
 #       enabled = var.termination_notification.enabled
 #       timeout = var.termination_notification.timeout
 #     }
 #   }
 #   dynamic "winrm_listener" {
-#     for_each = { for l in var.winrm_listeners : jsonencode(l) => l }
-
+#     for_each = var.winrm_listeners 
 #     content {
 #       protocol        = winrm_listener.value.protocol
 #       certificate_url = winrm_listener.value.certificate_url
 #     }
 #   }
-
-#   lifecycle {
-#     precondition {
-#       condition = length([
-#         for b in [
-#           var.source_image_id != null, var.source_image_reference != null,
-#           var.os_simple != null
-#         ] : b if b
-#       ]) == 1
-#       error_message = "Must provide one and only one of `vm_source_image_id`, `vm_source_image_reference` and `vm_os_simple`."
-#     }
-#     precondition {
-#       condition     = !var.boot_diagnostics ? true : var.new_boot_diagnostics_storage_account != null || var.boot_diagnostics_storage_account_uri != null
-#       error_message = "Either `new_boot_diagnostics_storage_account` or `vm_boot_diagnostics_storage_account_uri` must be provided if `boot_diagnostics` is `true`."
-#     }
-#     precondition {
-#       condition     = var.network_interface_ids != null || var.new_network_interface != null
-#       error_message = "Either `new_network_interface` or `network_interface_ids` must be provided."
-#     }
-#   }
 # }
-
-# locals {
-#   virtual_machine = local.is_windows ? {
-#     id                            = try(azurerm_windows_virtual_machine.vm_windows[0].id, null)
-#     name                          = try(azurerm_windows_virtual_machine.vm_windows[0].name, null)
-#     admin_username                = try(azurerm_windows_virtual_machine.vm_windows[0].admin_username, null)
-#     network_interface_ids         = try(azurerm_windows_virtual_machine.vm_windows[0].network_interface_ids, null)
-#     availability_set_id           = try(azurerm_windows_virtual_machine.vm_windows[0].availability_set_id, null)
-#     capacity_reservation_group_id = try(azurerm_windows_virtual_machine.vm_windows[0].capacity_reservation_group_id, null)
-#     computer_name                 = try(azurerm_windows_virtual_machine.vm_windows[0].computer_name, null)
-#     dedicated_host_id             = try(azurerm_windows_virtual_machine.vm_windows[0].dedicated_host_id, null)
-#     dedicated_host_group_id       = try(azurerm_windows_virtual_machine.vm_windows[0].dedicated_host_group_id, null)
-#     patch_mode                    = try(azurerm_windows_virtual_machine.vm_windows[0].patch_mode, null)
-#     proximity_placement_group_id  = try(azurerm_windows_virtual_machine.vm_windows[0].proximity_placement_group_id, null)
-#     source_image_id               = try(azurerm_windows_virtual_machine.vm_windows[0].source_image_id, null)
-#     virtual_machine_scale_set_id  = try(azurerm_windows_virtual_machine.vm_windows[0].virtual_machine_scale_set_id, null)
-#     timezone                      = try(azurerm_windows_virtual_machine.vm_windows[0].timezone, null)
-#     zone                          = try(azurerm_windows_virtual_machine.vm_windows[0].zone, null)
-#     identity                      = try(azurerm_windows_virtual_machine.vm_windows[0].identity, null)
-#     source_image_reference        = try(azurerm_windows_virtual_machine.vm_windows[0].source_image_reference, null)
-#     } : {
-#     id                            = try(azurerm_linux_virtual_machine.vm_linux[0].id, null)
-#     name                          = try(azurerm_linux_virtual_machine.vm_linux[0].name, null)
-#     admin_username                = try(azurerm_linux_virtual_machine.vm_linux[0].admin_username, null)
-#     network_interface_ids         = try(azurerm_linux_virtual_machine.vm_linux[0].network_interface_ids, null)
-#     availability_set_id           = try(azurerm_linux_virtual_machine.vm_linux[0].availability_set_id, null)
-#     capacity_reservation_group_id = try(azurerm_linux_virtual_machine.vm_linux[0].capacity_reservation_group_id, null)
-#     computer_name                 = try(azurerm_linux_virtual_machine.vm_linux[0].computer_name, null)
-#     dedicated_host_id             = try(azurerm_linux_virtual_machine.vm_linux[0].dedicated_host_id, null)
-#     dedicated_host_group_id       = try(azurerm_linux_virtual_machine.vm_linux[0].dedicated_host_group_id, null)
-#     patch_mode                    = try(azurerm_linux_virtual_machine.vm_linux[0].patch_mode, null)
-#     proximity_placement_group_id  = try(azurerm_linux_virtual_machine.vm_linux[0].proximity_placement_group_id, null)
-#     source_image_id               = try(azurerm_linux_virtual_machine.vm_linux[0].source_image_id, null)
-#     virtual_machine_scale_set_id  = try(azurerm_linux_virtual_machine.vm_linux[0].virtual_machine_scale_set_id, null)
-#     timezone                      = null
-#     zone                          = try(azurerm_linux_virtual_machine.vm_linux[0].zone, null)
-#     identity                      = try(azurerm_linux_virtual_machine.vm_linux[0].identity, null)
-#     source_image_reference        = try(azurerm_linux_virtual_machine.vm_linux[0].source_image_reference, null)
-#   }
 # }
 
 # resource "azurerm_network_interface" "vm" {

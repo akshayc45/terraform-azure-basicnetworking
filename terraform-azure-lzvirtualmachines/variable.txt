@@ -22,19 +22,7 @@ variable "subnet_id" {
   nullable    = false
 }
 
-variable "additional_unattend_contents" {
-  type = list(object({
-    content = string
-    setting = string
-  }))
-  default     = []
-  description = <<-EOT
-  list(object({
-    content = "(Required) The XML formatted content that is added to the unattend.xml file for the specified path and component. Changing this forces a new resource to be created."
-    setting = "(Required) The name of the setting to which the content applies. Possible values are `AutoLogon` and `FirstLogonCommands`. Changing this forces a new resource to be created."
-  }))
-  EOT
-}
+
 
 
 
@@ -508,11 +496,7 @@ variable "tags" {
 
 
 
-variable "timezone" {
-  type        = string
-  default     = null
-  description = "(Optional) Specifies the Time Zone which should be used by the Virtual Machine, [the possible values are defined here](https://jackstromberg.com/2017/01/list-of-time-zones-consumed-by-azure/). Changing this forces a new resource to be created."
-}
+
 
 # tflint-ignore: terraform_unused_declarations
 variable "tracing_tags_enabled" {
@@ -536,18 +520,5 @@ variable "tracing_tags_prefix" {
 
 
 
-variable "winrm_listeners" {
-  type = set(object({
-    protocol        = string
-    certificate_url = optional(string)
-  }))
-  default     = []
-  description = <<-EOT
-  set(object({
-    protocol        = "(Required) Specifies Specifies the protocol of listener. Possible values are `Http` or `Https`"
-    certificate_url = "(Optional) The Secret URL of a Key Vault Certificate, which must be specified when `protocol` is set to `Https`. Changing this forces a new resource to be created."
-  }))
-  EOT
-  nullable    = false
-}
+
 

@@ -361,3 +361,47 @@ variable "tags" {
   description = "key value pair of tags"
   default = {}
 }
+
+# variable "timezone" {
+#   type        = string
+#   default     = null
+#   description = "(Optional) Specifies the Time Zone which should be used by the Virtual Machine, [the possible values are defined here](https://jackstromberg.com/2017/01/list-of-time-zones-consumed-by-azure/). Changing this forces a new resource to be created."
+# }
+# variable "additional_unattend_contents" {
+#   type = list(object({
+#     content = string
+#     setting = string
+#   }))
+#   default     = []
+#   description = <<-EOT
+#   list(object({
+#     content = "(Required) The XML formatted content that is added to the unattend.xml file for the specified path and component. Changing this forces a new resource to be created."
+#     setting = "(Required) The name of the setting to which the content applies. Possible values are `AutoLogon` and `FirstLogonCommands`. Changing this forces a new resource to be created."
+#   }))
+#   EOT
+# }
+# variable "winrm_listeners" {
+#   type = map(object({
+#     protocol        = string
+#     certificate_url = optional(string)
+#   }))
+#   default     = {}
+#   description = <<-EOT
+#   set(object({
+#     protocol        = "(Required) Specifies Specifies the protocol of listener. Possible values are `Http` or `Https`"
+#     certificate_url = "(Optional) The Secret URL of a Key Vault Certificate, which must be specified when `protocol` is set to `Https`. Changing this forces a new resource to be created."
+#   }))
+#   EOT
+#   nullable    = false
+# }
+
+# variable "automatic_updates_enabled" {
+#   type        = bool
+#   default     = false
+#   description = "(Optional) Specifies if Automatic Updates are Enabled for the Windows Virtual Machine. Changing this forces a new resource to be created. Defaults to `true`."
+# }
+# variable "hotpatching_enabled" {
+#   type        = bool
+#   default     = false
+#   description = "(Optional) Should the VM be patched without requiring a reboot? Possible values are `true` or `false`. Defaults to `false`. For more information about hot patching please see the [product documentation](https://docs.microsoft.com/azure/automanage/automanage-hotpatch). Hotpatching can only be enabled if the `patch_mode` is set to `AutomaticByPlatform`, the `provision_vm_agent` is set to `true`, your `source_image_reference` references a hotpatching enabled image, and the VM's `size` is set to a [Azure generation 2](https://docs.microsoft.com/azure/virtual-machines/generation-2#generation-2-vm-sizes) VM. An example of how to correctly configure a Windows Virtual Machine to use the `hotpatching_enabled` field can be found in the [`./examples/virtual-machines/windows/hotpatching-enabled`](https://github.com/hashicorp/terraform-provider-azurerm/tree/main/examples/virtual-machines/windows/hotpatching-enabled) directory within the GitHub Repository."
+# }
